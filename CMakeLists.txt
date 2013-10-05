@@ -1,3 +1,5 @@
+request_dependency(cyclops)
+
 add_library(pointCloud SHARED 
 	pointCloud.cpp 
 	TextPointsLoader.cpp 
