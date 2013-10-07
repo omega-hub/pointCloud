@@ -1,4 +1,5 @@
 request_dependency(cyclops)
+include_directories(${OSG_INCLUDES})
 
 add_library(pointCloud SHARED 
 	pointCloud.cpp 

@@ -1,5 +1,5 @@
 #include <omega.h>
-#include <cyclops.h>
+#include <cyclops/cyclops.h>
 #include <omegaToolkit.h>
 
 #include "TextPointsLoader.h"

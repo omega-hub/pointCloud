@@ -1,9 +1,8 @@
 #ifndef _BINARY_POINTS_LOADER_H_
 #define _BINARY_POINTS_LOADER_H_
 
-// CVR
 #include <omega.h>
-#include <cyclops.h>
+#include <cyclops/cyclops.h>
 
 // OSG
 #include <osg/Group>
