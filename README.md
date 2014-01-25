@@ -28,6 +28,9 @@ pointCloudData.name = "points"
 pointCloudData.path = "points.xyz"
 pointCloudData.optimize = True
 scene.loadModel(pointCloudData)
+
+# create a static object using the loaded data
+object = StaticObject.create('points')
 ```
 
 ### Point shaders
@@ -48,4 +51,4 @@ program.geometryOutput = PrimitiveType.TriangleStrip
 scene.addProgram(program)
 ```
 
-Applying the shader to a point cloud object can be done with the standard `object.getMaterial()setProgram('programName')` command, where `programName` should match the name used by the program above.
+Applying the shader to a point cloud object can be done with the standard `object.getMaterial().setProgram('programName')` command, where `programName` should match the name used by the program above.
