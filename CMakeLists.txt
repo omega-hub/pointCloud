@@ -6,7 +6,9 @@ add_library(pointCloud MODULE
 	TextPointsLoader.cpp 
 	TextPointsLoader.h
 	BinaryPointsLoader.cpp 
-	BinaryPointsLoader.h)
+	BinaryPointsLoader.h
+	BinaryPointsReader.cpp 
+	BinaryPointsReader.h)
 	
 target_link_libraries(pointCloud omega cyclops)
 
