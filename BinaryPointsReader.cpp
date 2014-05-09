@@ -2,6 +2,7 @@
 
 #include <osg/Geode>
 #include <osg/Point>
+#include <osgDB/FileNameUtils>
 
 #include <limits>
 
@@ -10,8 +11,62 @@ using namespace omega;
 ///////////////////////////////////////////////////////////////////////////////
 osgDB::ReaderWriter::ReadResult BinaryPointsReader::readNode(const std::string& filename, const osgDB::ReaderWriter::Options* o) const
 {
+    std::string ext(osgDB::getLowerCaseFileExtension(filename));
+    if (!acceptsExtension(ext)) return ReadResult::FILE_NOT_HANDLED;
+
+    String actualFilename = filename;
+
+    // Check the options to see if we should read a subsection of the file
+    // and / or use decimation.
+    int readStartP = 0;
+    int readLengthP = 0;
+    int decimation = 0;
+    int batchSize = 1000;
+
+    if(o->getOptionString().size() > 0)
+    {
+        String format;
+
+        libconfig::ArgumentHelper ah;
+        ah.newString("format", "only suported format is xyzrgba", format);
+        ah.newNamedInt('s', "start", "start", "start record %", readStartP);
+        ah.newNamedInt('l', "length", "length", "number of records to read %", readLengthP);
+        ah.newNamedInt('d', "decimation", "decimation", "read decimation", decimation);
+        ah.newNamedInt('b', "batch-size", "batch size", "batch size", batchSize);
+        ah.process(o->getOptionString().c_str());
+    }
+
+    Vector<String> elems = StringUtils::split(filename, ".");
+    if(elems.size() == 3)
+    {
+        // The filename format is [filepath].[options].xyzb
+        // where options are startP-lengthP-decimation. This filename format is
+        // used for paged LOD loading.
+        Vector<String> options = StringUtils::split(elems[1], "-");
+
+        if(options.size() != 3)
+        {
+            ofwarn("BinaryPointsReader::readNode: wrong filename format %1%", %filename);
+            return ReadResult();
+        }
+
+        readStartP = boost::lexical_cast<int>(options[0]);
+        readLengthP = boost::lexical_cast<int>(options[1]);
+        decimation = boost::lexical_cast<int>(options[2]);
+
+        actualFilename = elems[0] + "." + elems[2];
+
+        ofmsg("Reading file %1% start=%2% length=%3% dec=%4%", 
+            %actualFilename %readStartP %readLengthP %decimation);
+    }
+    else if(elems.size() != 2)
+    {
+        ofwarn("BinaryPointsReader::readNode: wrong filename format %1%", %filename);
+        return ReadResult();
+    }
+
     String path;
-    if(DataManager::findFile(filename, path))
+    if(DataManager::findFile(actualFilename, path))
     {
         osg::Vec3Array* verticesP = new osg::Vec3Array();
         osg::Vec4Array* verticesC = new osg::Vec4Array();
@@ -21,26 +76,6 @@ osgDB::ReaderWriter::ReadResult BinaryPointsReader::readNode(const std::string& 
         float minf = -numeric_limits<float>::max();
         Vector4f rgbamin = Vector4f(maxf, maxf, maxf, maxf);
         Vector4f rgbamax = Vector4f(minf, minf, minf, minf);
-
-        // Check the options to see if we should read a subsection of the file
-        // and / or use decimation.
-        int readStartP = 0;
-        int readLengthP = 0;
-        int decimation = 0;
-        int batchSize = 1000;
-
-        if(o->getOptionString().size() > 0)
-        {
-            String format;
-
-            libconfig::ArgumentHelper ah;
-            ah.newString("format", "only suported format is xyzrgba", format);
-            ah.newNamedInt('s', "start", "start", "start record %", readStartP);
-            ah.newNamedInt('l', "length", "length", "number of records to read %", readLengthP);
-            ah.newNamedInt('d', "decimation", "decimation", "read decimation", decimation);
-            ah.newNamedInt('b', "batch-size", "batch size", "batch size", batchSize);
-            ah.process(o->getOptionString().c_str());
-        }
 
         readXYZ(path,
             readStartP, readLengthP, decimation,
@@ -129,9 +164,9 @@ void BinaryPointsReader::readXYZ(
     fseek(fin, 0, SEEK_END);
     long endpos = ftell(fin);
     fseek(fin, 0, SEEK_SET);
-    int numRecords = endpos / recordSize;
-    int readStart = numRecords * readStartP / 100;
-    int readLength = numRecords * readLengthP / 100;
+    long numRecords = endpos / recordSize;
+    long readStart = numRecords * readStartP / 100;
+    long readLength = numRecords * readLengthP / 100;
 
     if(decimation <= 0) decimation = 1;
     if(readStart != 0)

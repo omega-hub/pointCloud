@@ -27,17 +27,6 @@ public:
     void initialize();
 
 private:
-    bool loadFile(cyclops::ModelAsset* model, osg::Group * grp);
-    void readXYZ(const String& filename, 
-		const String& options, osg::Vec3Array* points, osg::Vec4Array* colors,
-		int* numPoints,
-		Vector4f* rgbamin,
-		Vector4f* rgbamax);
-
-private:
 	String format;
-	int readStartP;
-	int readLengthP;
-	int decimation;
 };
 #endif
