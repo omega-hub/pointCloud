@@ -211,3 +211,56 @@ osgDB::ReaderWriter::ReadResult BinaryPointsReader::readNode(const std::string& 
     return ReadResult();
 }
 
+///////////////////////////////////////////////////////////////////////////////
+osgDB::ReaderWriter::ReadResult BinaryPointsReader::readBoundsFile(const String& filename) const
+{
+    // Results will be in a file with same name as the one we want to open,
+    // but with extension .bounds, in a directory called bounds
+    // get base filename (without extension)
+    String boundsBasename;
+    String boundsExtension;
+    String boundsPath;
+    String path;
+    StringUtils::splitFullFilename(filename, boundsBasename, boundsExtension, boundsPath);
+
+    String boundsFileName = boundsPath + "bounds/" + boundsBasename + ".bounds";
+    if(DataManager::findFile(boundsFileName, path))
+    {
+        String boundsText = DataManager::readTextFile(path);
+        // Bounds text format:
+        // xmin, xmax, ymin, ymax, zmin, zmax, rmin, rmax, gmin, gmax, bmin, bmax, amin, amax
+        Vector<String> vals = StringUtils::split(boundsText, ",");
+        float values[14];
+        for(int i = 0; i < 14; i++)
+        {
+            StringUtils::trim(vals[i]);
+            values[i] = boost::lexical_cast<float>(vals[i]);
+        }
+        Ref<osg::Node> n = new osg::Node();
+        n->setUserValue("xmin", values[0]);
+        n->setUserValue("xmax", values[1]);
+        n->setUserValue("ymin", values[2]);
+        n->setUserValue("ymax", values[3]);
+        n->setUserValue("zmin", values[4]);
+        n->setUserValue("zmax", values[5]);
+        n->setUserValue("rmin", values[6]);
+        n->setUserValue("rmax", values[7]);
+        n->setUserValue("gmin", values[8]);
+        n->setUserValue("gmax", values[9]);
+        n->setUserValue("bmin", values[10]);
+        n->setUserValue("bmax", values[11]);
+        n->setUserValue("amin", values[12]);
+        n->setUserValue("amax", values[13]);
+
+        //ofmsg("setmin %1% %2% %3% setmax %4% %5% %6%", 
+        //    %values[0] %values[2] %values[4]
+        //    %values[1] %values[3] %values[5]);
+
+        return ReadResult(n);
+    }
+    else
+    {
+        ofmsg("BinaryPointsReader::readBoundsFile bounds file not found %1% ", %boundsFileName);
+    }
+    return ReadResult();
+}

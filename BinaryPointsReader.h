@@ -48,6 +48,8 @@ void BinaryPointsReader::readXYZ(
     int readStartP, int readLengthP, int decimation,
     osg::Vec3Array* points, osg::Vec4Array* colors,
     int* numPoints,
+    Vector3f* pointmin,
+    Vector3f* pointmax,
     Vector4f* rgbamin,
     Vector4f* rgbamax) const
 {
@@ -80,8 +82,8 @@ void BinaryPointsReader::readXYZ(
         readLength = numRecords - readStart;
     }
 
-    ofmsg("BinaryPointsLoader: reading records %1% - %2% of %3% (decimation %4%) of %5%",
-        %readStart % (readStart + readLength) % numRecords %decimation %filename);
+    //ofmsg("BinaryPointsLoader: reading records %1% - %2% of %3% (decimation %4%) of %5%",
+    //    %readStart % (readStart + readLength) % numRecords %decimation %filename);
 
     // Read in data
     T* buffer = (T*)malloc(recordSize * readLength / decimation);
@@ -105,10 +107,17 @@ void BinaryPointsReader::readXYZ(
         int j = 0;
         for(int i = 0; i < ne; i++)
         {
-            // Read one record
+            // // Read one record
+            // size_t size = fread(&buffer[j], recordSize, 1, fin);
+            // // Skip ahead decimation - 1 records.
+            // fseek(fin, recordSize * (decimation - 1), SEEK_CUR);
+
+            // RANDOM DECIMATED READ
+            long recordoffset = rand() / (RAND_MAX / decimation + 1);
+            long offs = ((long)recordSize) * (i * (decimation)+recordoffset);
+            fseek(fin, (readStart * recordSize) + offs, SEEK_SET);
             size_t size = fread(&buffer[j], recordSize, 1, fin);
-            // Skip ahead decimation - 1 records.
-            fseek(fin, recordSize * (decimation - 1), SEEK_CUR);
+
             j += numFields;
         }
     }
@@ -137,6 +146,11 @@ void BinaryPointsReader::readXYZ(
         {
             if(color[j] < (*rgbamin)[j]) (*rgbamin)[j] = color[j];
             if(color[j] > (*rgbamax)[j]) (*rgbamax)[j] = color[j];
+        }
+        for(int j = 0; j < 3; j++)
+        {
+            if(point[j] < (*pointmin)[j]) (*pointmin)[j] = point[j];
+            if(point[j] > (*pointmax)[j]) (*pointmax)[j] = point[j];
         }
     }
 
