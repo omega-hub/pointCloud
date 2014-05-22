@@ -32,7 +32,11 @@ private:
         int readStartP, int readLengthP, int decimation,
         osg::Vec3Array* points, osg::Vec4Array* colors,
         int* numPoints,
+        Vector3f* pointmin,
+        Vector3f* pointmax,
         Vector4f* rgbamin,
         Vector4f* rgbamax) const;
+
+    ReadResult readBoundsFile(const String& datafile) const;
 };
 #endif
