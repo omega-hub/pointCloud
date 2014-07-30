@@ -32,8 +32,8 @@ osgDB::ReaderWriter::ReadResult BinaryPointsReader::readNode(const std::string& 
 
         libconfig::ArgumentHelper ah;
         ah.newString("format", "only suported format is xyzrgba", format);
-        ah.newNamedInt('s', "start", "start", "start record %", readStartP);
-        ah.newNamedInt('l', "length", "length", "number of records to read %", readLengthP);
+        ah.newNamedInt('s', "start", "start", "start batch id", readStartP);
+        ah.newNamedInt('l', "length", "length", "number of batches to read", readLengthP);
         ah.newNamedInt('d', "decimation", "decimation", "read decimation", decimation);
         ah.newNamedInt('b', "batch-size", "batch size", "batch size", batchSize);
         ah.newFlag('z', "size", "computes size only (or read from cached", sizeOnly);
@@ -85,7 +85,7 @@ osgDB::ReaderWriter::ReadResult BinaryPointsReader::readNode(const std::string& 
         osg::Vec3Array* verticesP = new osg::Vec3Array();
         osg::Vec4Array* verticesC = new osg::Vec4Array();
 
-        int numPoints = 0;
+        size_t numPoints = 0;
         float maxf = numeric_limits<float>::max();
         float minf = -numeric_limits<float>::max();
         Vector4f rgbamin = Vector4f(maxf, maxf, maxf, maxf);

@@ -58,8 +58,8 @@ bool BinaryPointsLoader::load(ModelAsset* model)
     FILE* fin = fopen(path.c_str(), "rb");
     // How many records are in the file?
     fseek(fin, 0, SEEK_END);
-    long endpos = ftell(fin);
-    long numRecords = endpos / recordSize;
+    size_t endpos = ftell(fin);
+    size_t numRecords = endpos / recordSize;
     fclose(fin);
 
     // Parse options (format: 'pointsPerBatch dist:dec+')
@@ -67,10 +67,10 @@ bool BinaryPointsLoader::load(ModelAsset* model)
     // at max LOD, and each distmin:distmax:dec pair is a LOD level with distance from 
     // eye and decimation level.
     Vector<String> args = StringUtils::split(model->info->options, " ");
-    long pointsPerBatch = boost::lexical_cast<long>(args[0]);
+    size_t pointsPerBatch = boost::lexical_cast<size_t>(args[0]);
 
     // Convert points per batch to batch length as file size percentage.
-    int lengthP = pointsPerBatch * 100 / numRecords;
+    size_t lengthP = pointsPerBatch * BINARY_POINTS_MAX_BATCHES / numRecords;
 
     ofmsg("Total Points: %1%   Points per batch: %2%   Batch length(%%): %3%", 
     	%numRecords
@@ -80,8 +80,8 @@ bool BinaryPointsLoader::load(ModelAsset* model)
     if(lengthP < 1)
     {
     	lengthP = 1;
-    	pointsPerBatch = numRecords / 100;
-    	ofwarn("Can't have batches smaller than 1%%. Adjusting batch size to %1%", %pointsPerBatch);
+        pointsPerBatch = numRecords / BINARY_POINTS_MAX_BATCHES;
+        ofwarn("Can't have more than %1% batches. Adjusting batch size to %2%", %BINARY_POINTS_MAX_BATCHES %pointsPerBatch);
     }
 
     int mindec = 1000000;
@@ -114,7 +114,7 @@ bool BinaryPointsLoader::load(ModelAsset* model)
     Vector4f rgbamax = Vector4f(minf, minf, minf, minf);
 
     // Iterate for each batch
-    for(int startP = 0; startP <= 100; startP += lengthP)
+    for(int startP = 0; startP <= BINARY_POINTS_MAX_BATCHES; startP += lengthP)
     {
         int childid = 0;
         osg::PagedLOD* plod = new osg::PagedLOD();

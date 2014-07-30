@@ -14,6 +14,9 @@
 
 using namespace omega;
 
+// Maximum number of batches a file can be split into.
+#define BINARY_POINTS_MAX_BATCHES 100
+
 class BinaryPointsReader: public osgDB::ReaderWriter
 {
 public:
@@ -32,7 +35,7 @@ private:
         const String& filename,
         int readStartP, int readLengthP, int decimation,
         osg::Vec3Array* points, osg::Vec4Array* colors,
-        int* numPoints,
+        size_t* numPoints,
         Vector3f* pointmin,
         Vector3f* pointmax,
         Vector4f* rgbamin,
@@ -47,7 +50,7 @@ void BinaryPointsReader::readXYZ(
     const String& filename,
     int readStartP, int readLengthP, int decimation,
     osg::Vec3Array* points, osg::Vec4Array* colors,
-    int* numPoints,
+    size_t* numPoints,
     Vector3f* pointmin,
     Vector3f* pointmax,
     Vector4f* rgbamin,
@@ -64,11 +67,11 @@ void BinaryPointsReader::readXYZ(
 
     // How many records are in the file?
     fseek(fin, 0, SEEK_END);
-    long endpos = ftell(fin);
+    size_t endpos = ftell(fin);
     fseek(fin, 0, SEEK_SET);
-    long numRecords = endpos / recordSize;
-    long readStart = numRecords * readStartP / 100;
-    long readLength = numRecords * readLengthP / 100;
+    size_t numRecords = endpos / recordSize;
+    size_t readStart = numRecords * readStartP / BINARY_POINTS_MAX_BATCHES;
+    size_t readLength = numRecords * readLengthP / BINARY_POINTS_MAX_BATCHES;
 
     if(decimation <= 0) decimation = 1;
     if(readStart != 0)
@@ -94,7 +97,7 @@ void BinaryPointsReader::readXYZ(
         return;
     }
 
-    int ne = readLength / decimation;
+    size_t ne = readLength / decimation;
 
     // Read data
     // If data is not decimated, read it in one go.
@@ -113,8 +116,8 @@ void BinaryPointsReader::readXYZ(
             // fseek(fin, recordSize * (decimation - 1), SEEK_CUR);
 
             // RANDOM DECIMATED READ
-            long recordoffset = rand() / (RAND_MAX / decimation + 1);
-            long offs = ((long)recordSize) * (i * (decimation)+recordoffset);
+            size_t recordoffset = rand() / (RAND_MAX / decimation + 1);
+            size_t offs = ((size_t)recordSize) * (i * (decimation)+recordoffset);
             fseek(fin, (readStart * recordSize) + offs, SEEK_SET);
             size_t size = fread(&buffer[j], recordSize, 1, fin);
 
@@ -125,8 +128,8 @@ void BinaryPointsReader::readXYZ(
     points->reserve(ne);
     colors->reserve(ne);
 
-    int j = 0;
-    for(int i = 0; i < ne; i++)
+    size_t j = 0;
+    for(size_t i = 0; i < ne; i++)
     {
         point[0] = buffer[i * numFields];
         point[1] = buffer[i * numFields + 1];
@@ -142,12 +145,12 @@ void BinaryPointsReader::readXYZ(
 
         // Update data bounds and number of points
         *numPoints = *numPoints + 1;
-        for(int j = 0; j < 4; j++)
+        for(size_t j = 0; j < 4; j++)
         {
             if(color[j] < (*rgbamin)[j]) (*rgbamin)[j] = color[j];
             if(color[j] > (*rgbamax)[j]) (*rgbamax)[j] = color[j];
         }
-        for(int j = 0; j < 3; j++)
+        for(size_t j = 0; j < 3; j++)
         {
             if(point[j] < (*pointmin)[j]) (*pointmin)[j] = point[j];
             if(point[j] > (*pointmax)[j]) (*pointmax)[j] = point[j];
