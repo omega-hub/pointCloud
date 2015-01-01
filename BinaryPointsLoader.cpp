@@ -191,16 +191,16 @@ bool BinaryPointsLoader::load(ModelAsset* model)
     // Save loaded results in the model info
     string output =
         ostr("{ "
-        "'minR': %d, 'maxR': %d, "
-        "'minG': %d, 'maxG': %d, "
-        "'minB': %d, 'maxB': %d, "
-        "'minA': %d, 'maxA': %d }",
+        "'minR': %f, 'maxR': %f, "
+        "'minG': %f, 'maxG': %f, "
+        "'minB': %f, 'maxB': %f, "
+        "'minA': %f, 'maxA': %f }",
         %rgbamin[0] %rgbamax[0]
         %rgbamin[1] %rgbamax[1]
         %rgbamin[2] %rgbamax[2]
         %rgbamin[3] %rgbamax[3]
         );
-
+    ofmsg("out %1%", %output);
     model->info->loaderOutput = output;
 
     model->nodes.push_back(group);
