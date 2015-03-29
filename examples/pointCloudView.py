@@ -1,5 +1,5 @@
-from pointCloud import *
 from cyclops import *
+from pointCloud import *
 
 scene = getSceneManager()
 scene.addLoader(BinaryPointsLoader())
@@ -30,3 +30,6 @@ pointCloud = StaticObject.create(pointCloudModel.name)
 mat = pointCloud.getMaterial()
 mat.setProgram(pointProgram.name)
 mat.attachUniform(pointScale)
+
+getDefaultCamera().setPosition(0, 10, 50)
+getDefaultCamera().lookAt(pointCloud.getBoundCenter(), Vector3(0,1,0))
