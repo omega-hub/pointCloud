@@ -98,7 +98,7 @@ void BinaryPointsReader::readXYZ(
     }
 
     size_t ne = readLength / decimation;
-
+    srand(100);
     // Read data
     // If data is not decimated, read it in one go.
     if(decimation == 1)
