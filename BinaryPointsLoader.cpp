@@ -72,7 +72,7 @@ bool BinaryPointsLoader::load(ModelAsset* model)
     // Convert points per batch to batch length as file size percentage.
     size_t lengthP = pointsPerBatch * BINARY_POINTS_MAX_BATCHES / numRecords;
 
-    ofmsg("Total Points: %1%   Points per batch: %2%   Batch length(%%): %3%", 
+    ofmsg("[BinaryPointsLoader] Total Points: <%1%>   Points per batch: <%2%>   Batch length(%%): <%3%>",
     	%numRecords
     	%pointsPerBatch
     	%lengthP);
@@ -98,7 +98,7 @@ bool BinaryPointsLoader::load(ModelAsset* model)
         if(ll.dec < mindec) mindec = ll.dec;
     }
 
-    ofmsg("LOD levels: %1%", %lodlevels.size());
+    oflog(Verbose, "[BinaryPointsLoader] LOD levels: <%1%>", %lodlevels.size());
 
     // Create root group for this point cloud
     Ref<osg::Group> group = new osg::Group();
@@ -200,7 +200,7 @@ bool BinaryPointsLoader::load(ModelAsset* model)
         %rgbamin[2] %rgbamax[2]
         %rgbamin[3] %rgbamax[3]
         );
-    ofmsg("out %1%", %output);
+    oflog(Verbose, "[BinaryPointsLoader] model info: <%1%>", %output);
     model->info->loaderOutput = output;
 
     model->nodes.push_back(group);
