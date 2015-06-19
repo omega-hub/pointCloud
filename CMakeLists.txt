@@ -8,7 +8,9 @@ add_library(pointCloud MODULE
 	BinaryPointsLoader.cpp 
 	BinaryPointsLoader.h
 	BinaryPointsReader.cpp 
-	BinaryPointsReader.h)
+	BinaryPointsReader.h
+    SphereArrayFilter.h
+    SphereArrayFilter.cpp)
 	
 target_link_libraries(pointCloud omega cyclops)
 
