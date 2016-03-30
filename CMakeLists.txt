@@ -1,3 +1,4 @@
+module_version(1.1)
 request_dependency(cyclops)
 include_directories(${OSG_INCLUDES})
 
